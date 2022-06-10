@@ -2,12 +2,14 @@ const express = require("express");
 const cloudinary = require("cloudinary").v2;
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const multer = require("multer");
+// const config = require("config");
 const app = express();
 
+// console.log(config.get("apiSecret"));
 cloudinary.config({
-  cloud_name: "dhc9vwlnl",
-  api_key: "426828191188413",
-  api_secret: "nxeLk8PQqVgLa9BO-aEUve9jUpY",
+  cloud_name: "",
+  api_key: "",
+  api_secret: "",
 });
 
 const storage = new CloudinaryStorage({
@@ -24,8 +26,29 @@ app.get("/", (req, res) => {
 });
 
 app.post("/", upload.single("picture"), async (req, res) => {
-  console.log("The file", req.file);
-  return res.json({ picture: req.file.path });
+  try {
+    console.log("The file", req.file);
+    return res.json({ picture: req.file.path });
+  } catch (ex) {
+    res.status(500).send("Something went wrong !");
+    console.log("The error", ex);
+  }
+});
+
+app.post("/withCloudinary/", (req, res) => {
+  cloudinary.uploader
+    .upload("./videos/vid1.mkv", {
+      resource_type: "video",
+      chunk_size: 6000000,
+    })
+    .then((result) => {
+      res.status(200).send("Received");
+      console.log("success", JSON.stringify(result, null, 2));
+    })
+    .catch((ex) => {
+      res.status(500).send("Something went wrong!");
+      console.log("error", JSON.stringify(ex, null, 2));
+    });
 });
 
 const start = (port) => {
